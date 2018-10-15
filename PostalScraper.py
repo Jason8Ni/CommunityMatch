@@ -11,6 +11,12 @@ import requests
 import urllib2.open
 
 
+# In[41]:
+
+
+postalData = pd.DataFrame(columns = ["PostalCode", "Borough", "Neighbourhood"])
+
+
 # In[19]:
 
 
@@ -57,9 +63,23 @@ rowData = row.find_all('th')
 print(rowData)
 
 
-# In[35]:
+# In[55]:
 
 
-for cell in row.find_all('th'):
-    print(cell.text)
+
+
+for row in dataTable.find_all('tr'):
+    temp = []
+    for cell in row.find_all('td'):
+        temp.append(cell.text)
+        #print(cell.text)
+        print(temp)
+    postalData = postalData.append(pd.DataFrame(temp).T)
+    #print()
+
+
+# In[53]:
+
+
+print(postalData)
 
