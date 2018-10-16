@@ -55,3 +55,34 @@ postDataFiltered
 
 postDataFiltered.shape
 
+def createPostalCodeDataFrame(url):
+    postalData = pd.DataFrame(columns = ["PostalCode", "Borough", "Neighbourhood"])
+
+    obj  = requests.get(url)
+
+    page = obj.text
+
+    soup = BeautifulSoup(page, "lxml")
+
+    #print(soup)
+
+    dataTable = soup.find('table', class_='wikitable sortable')
+    row = dataTable.find('tr')
+
+    for row in dataTable.find_all('tr')[1:]:
+        temp = []
+        for cell in row.find_all('td'):
+            temp.append(cell.text)
+        print(temp)
+        postalData = postalData.append(
+        dict(zip(["PostalCode", "Borough", "Neighbourhood"], temp)), ignore_index=True)
+
+    postalData = postalData[postalData.Borough != "Not assigned"]
+    postalData["Neighbourhood"] = postalData["Neighbourhood"].replace({'\n':''}, regex=True)
+    postalData=postalData.reset_index()
+    postalData = postalData.drop(["index"], axis = 1)
+    postalData.set_value(6,'Neighbourhood', "Queen's Park")
+
+    postDataFiltered = postalData.groupby(["PostalCode"]).agg({"Borough": lambda x: select_Borough(x),
+                                    "Neighbourhood": lambda x: concatenate_neighbourhood(x)})
+    return postDataFiltered
