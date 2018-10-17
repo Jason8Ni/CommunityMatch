@@ -86,3 +86,6 @@ def createPostalCodeDataFrame(url):
     postDataFiltered = postalData.groupby(["PostalCode"]).agg({"Borough": lambda x: select_Borough(x),
                                     "Neighbourhood": lambda x: concatenate_neighbourhood(x)})
     return postDataFiltered
+
+PostalData = createPostalCodeDataFrame("https://en.wikipedia.org/wiki/List_of_postal_codes_of_Canada:_M")
+postDataFiltered.to_csv("TorontoPostalData.csv")
