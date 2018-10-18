@@ -93,7 +93,7 @@ def getTorontoCoords():
     location = geolocator.geocode(address)
     latitude = location.latitude
     longitude = location.longitude
-    return location, latitude, lontitude
+    return location, latitude, longitude
 
 TorontoPostalData=pd.read_csv("TorontoPostalData.csv").set_index("PostalCode")
 
