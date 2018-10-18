@@ -23,8 +23,8 @@ def buildMap(location, latitude, longitude):
     mapOfToronto = folium.Map(location=[latitude, longitude], zoom_start=11)
 
     # add markers to map
-    for lat, lng, borough, neighborhood in zip(TorontoPostalData['Latitude'], TorontoPostalData['Longitude'], TorontoPostalData['Borough'], TorontoPostalData['Neighbourhood']):
-        label = '{}, {}'.format(neighborhood, borough)
+    for lat, lng, borough, Neighhbourhood in zip(TorontoPostalData['Latitude'], TorontoPostalData['Longitude'], TorontoPostalData['Borough'], TorontoPostalData['Neighbourhood']):
+        label = '{}, {}'.format(Neighhbourhood, borough)
         label = folium.Popup(label, parse_html=True)
         folium.CircleMarker(
             [lat, lng],
@@ -78,9 +78,9 @@ def getNearbyVenues(names, latitudes, longitudes, radius=500):
             v['venue']['categories'][0]['name']) for v in results])
 
     nearbyVenues = pd.DataFrame([item for venue_list in venuesList for item in venue_list])
-    nearbyVenues.columns = ['Neighborhood', 
-                  'Neighborhood Latitude', 
-                  'Neighborhood Longitude', 
+    nearbyVenues.columns = ['Neighhbourhood', 
+                  'Neighhbourhood Latitude', 
+                  'Neighhbourhood Longitude', 
                   'Venue', 
                   'Venue Latitude', 
                   'Venue Longitude', 
@@ -88,6 +88,12 @@ def getNearbyVenues(names, latitudes, longitudes, radius=500):
     
     return(nearbyVenues)
 
+def getTorontoCoords():
+    geolocator = Nominatim()
+    location = geolocator.geocode(address)
+    latitude = location.latitude
+    longitude = location.longitude
+    return location, latitude, lontitude
 
 TorontoPostalData=pd.read_csv("TorontoPostalData.csv").set_index("PostalCode")
 
@@ -103,12 +109,7 @@ radius = 500
 
 address = 'Toronto'
 
-geolocator = Nominatim()
-location = geolocator.geocode(address)
-latitude = location.latitude
-longitude = location.longitude
-print('The geograpical coordinate of Toronto are {}, {}.'.format(latitude, longitude))
-
+location, longitude, latitude = getTorontoCoords()
 mapOfToronto = buildMap(location, latitude, longitude)
 
 url = 'https://api.foursquare.com/v2/venues/explore?&client_id={}&client_secret={}&v={}&ll={},{}&radius={}&limit={}'.format(
@@ -131,49 +132,29 @@ TorontoPostalData = TorontoPostalData.reset_index()
 
 torontoVenuesOnehot = pd.get_dummies(torontoVenues[['Venue Category']], prefix="", prefix_sep="")
 
-# add neighborhood column back to dataframe
-torontoVenuesOnehot['Neighborhood'] = torontoVenues['Neighborhood'] 
+# add Neighhbourhood column back to dataframe
+torontoVenuesOnehot['Neighhbourhood'] = torontoVenues['Neighhbourhood'] 
 
-# move neighborhood column to the first column
+# move Neighhbourhood column to the first column
 fixed_columns = [torontoVenuesOnehot.columns[-1]] + list(torontoVenuesOnehot.columns[:-1])
 torontoVenuesOnehot =torontoVenuesOnehot[fixed_columns]
 
-torontoVenuesOnehot.head()
-
-
-# In[77]:
-
-
-torontoGrouped = torontoVenuesOnehot.groupby('Neighborhood').mean().reset_index()
+torontoGrouped = torontoVenuesOnehot.groupby('Neighhbourhood').mean().reset_index()
 torontoGrouped
-
-
-# In[78]:
-
-
-torontoGrouped.shape
-
-
-# In[79]:
-
 
 #Calc five top venues for each for each neighbourhood
 
 num_top_venues = 5
 
-for hood in torontoGrouped['Neighborhood']:
+for hood in torontoGrouped['Neighhbourhood']:
     print("----"+hood+"----")
-    temp = torontoGrouped[torontoGrouped['Neighborhood'] == hood].T.reset_index()
+    temp = torontoGrouped[torontoGrouped['Neighhbourhood'] == hood].T.reset_index()
     temp.columns = ['venue','freq']
     temp = temp.iloc[1:]
     temp['freq'] = temp['freq'].astype(float)
     temp = temp.round({'freq': 2})
     print(temp.sort_values('freq', ascending=False).reset_index(drop=True).head(num_top_venues))
     print('\n')
-
-
-# In[80]:
-
 
 def return_most_common_venues(row, num_top_venues):
     row_categories = row.iloc[1:]
@@ -186,7 +167,7 @@ num_top_venues = 10
 indicators = ['st', 'nd', 'rd']
 
 # create columns according to number of top venues
-columns = ['Neighborhood']
+columns = ['Neighhbourhood']
 for ind in np.arange(num_top_venues):
     try:
         columns.append('{}{} Most Common Venue'.format(ind+1, indicators[ind]))
@@ -194,37 +175,21 @@ for ind in np.arange(num_top_venues):
         columns.append('{}th Most Common Venue'.format(ind+1))
 
 # create a new dataframe
-neighborhoods_venues_sorted = pd.DataFrame(columns=columns)
-neighborhoods_venues_sorted['Neighborhood'] = torontoGrouped['Neighborhood']
+Neighhbourhoods_venues_sorted = pd.DataFrame(columns=columns)
+Neighhbourhoods_venues_sorted['Neighhbourhood'] = torontoGrouped['Neighhbourhood']
 
 for ind in np.arange(torontoGrouped.shape[0]):
-    neighborhoods_venues_sorted.iloc[ind, 1:] = return_most_common_venues(torontoGrouped.iloc[ind, :], num_top_venues)
+    Neighhbourhoods_venues_sorted.iloc[ind, 1:] = return_most_common_venues(torontoGrouped.iloc[ind, :], num_top_venues)
 
-neighborhoods_venues_sorted
-
-
-# In[97]:
-
-
-print(torontoClustering.shape)
-TorontoPostalData.head()
-TorontoPostalData.columns=["PostalCode", "Neighborhood", "Borough", "Latitude", "Longitude"]
-
-
-# In[101]:
-
+TorontoPostalData.columns=["PostalCode", "Neighhbourhood", "Borough", "Latitude", "Longitude"]
 
 TorontoPostalData = TorontoPostalData.reset_index()
-TorontoPostalData.head()
 
-
-# In[119]:
-
-
+# CLUSTERING 
 # set number of clusters
 kclusters = 3
 
-torontoClustering = torontoGrouped.drop('Neighborhood', 1)
+torontoClustering = torontoGrouped.drop('Neighhbourhood', 1)
 
 # run k-means clustering
 kmeans = KMeans(n_clusters=kclusters, random_state=0).fit(torontoClustering)
@@ -234,32 +199,12 @@ kmeans.labels_[0:10]
 
 torontoAllData = TorontoPostalData
 
-# merge toronto_grouped with toronto_data to add latitude/longitude for each neighborhood
-torontoAllData = torontoAllData.join(neighborhoods_venues_sorted.set_index('Neighborhood'), on='Neighborhood')
-
-torontoAllData.head() # check the last columns!
-
-
-# In[120]:
-
+# merge toronto_grouped with toronto_data to add latitude/longitude for each Neighhbourhood
+torontoAllData = torontoAllData.join(Neighhbourhoods_venues_sorted.set_index('Neighhbourhood'), on='Neighhbourhood')
 
 torontoAllData = torontoAllData.dropna(axis = 0).reset_index(drop=True)
 
-
-# In[121]:
-
-
 torontoAllData['Cluster Labels'] = kmeans.labels_
-
-
-# In[122]:
-
-
-torontoAllData
-
-
-# In[123]:
-
 
 # create map
 map_clusters = folium.Map(location=[latitude, longitude], zoom_start=11)
@@ -272,7 +217,7 @@ rainbow = [colors.rgb2hex(i) for i in colors_array]
 
 # add markers to the map
 markers_colors = []
-for lat, lon, poi, cluster in zip(torontoAllData['Latitude'], torontoAllData['Longitude'], torontoAllData['Neighborhood'], torontoAllData['Cluster Labels']):
+for lat, lon, poi, cluster in zip(torontoAllData['Latitude'], torontoAllData['Longitude'], torontoAllData['Neighhbourhood'], torontoAllData['Cluster Labels']):
     label = folium.Popup(str(poi) + ' Cluster ' + str(cluster), parse_html=True)
     folium.CircleMarker(
         [lat, lon],
