@@ -15,23 +15,18 @@ After this was done, and the dataframe was exported to `TorontoPostalData.csv`, 
 Additional data was collected about each neighbourhood. The idea was to cluster and determine similar neighbourhoods across Toronto based on the types of venues that they offered. To gather this data, the Foursquare API was used. This API provides real-time geographical data of almost anywhere on Earth. 
 
 
-## Training
-
-Training was done using scikit-learn. Any other external library like Tensorflow was throught to be overkill for this exploratory problem. 
-
 ## Data visualization
 
 Maps were built and created using Folium.
 
 Neighbourhoods of Toronto: 
 
-3 Clusters Training Results:
-
-5 Cluters Training Results:
-
-10 Clusters Training Results:
+![Toronto Neighbourhoods](https://github.com/Jason8Ni/CommunityMatch/blob/master/toronto.PNG)
 
 
+## Training
+
+Training was done using scikit-learn. Any other external library like Tensorflow was throught to be overkill for this exploratory problem. 
 
 ## TODO
 
