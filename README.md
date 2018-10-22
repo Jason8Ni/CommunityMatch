@@ -25,6 +25,7 @@ A simple K-Means algorithm was used.
 Maps were built and created using Folium.
 
 Neighbourhoods of Toronto: 
+![](https://github.com/Jason8Ni/CommunityMatch/blob/master/toronto.PNG)
 
 Toronto Neighbourhoods labelled 3 clusters:
 
